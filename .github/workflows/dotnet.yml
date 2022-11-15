@@ -1,0 +1,52 @@
+name: AppointmentLookup Master CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  pipeline:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Display dotnet version
+      run: dotnet --version
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore appointmentLookupApi/appointmentLookupApi.csproj
+    - name: Build
+      run: dotnet build appointmentLookupApi/appointmentLookupApi.csproj --no-restore
+    - name: Test
+      run: dotnet test Tests/UnitTests/UnitTests.csproj --verbosity normal --logger trx --results-directory "TestResults"
+    - name: Upload dotnet test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: dotnet-results
+        path: TestResults
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+    - name: Build docker image
+      uses: docker/build-push-action@v3
+      with:
+        context: .
+        file: ./Dockerfile
+        push: false
+        tags: appointmentlookupapi:latest
+        build-args: |
+          EX_TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          EX_CGE_TOKEN=TEST
+    - name: Tag docker image
+      run: docker tag appointmentlookupapi:latest registry.digitalocean.com/appointmentlookupregistry/appointmentlookup:latest
+    - name: Digital Ocean registry login
+      run: doctl registry login
+    - name: Digital Ocean Registry Push
+      run: docker push registry.digitalocean.com/appointmentlookupregistry/appointmentlookup:latest
