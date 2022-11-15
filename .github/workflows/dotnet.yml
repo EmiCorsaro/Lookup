@@ -1,4 +1,4 @@
-name: AppointmentLookup Master CI
+name: Lookup Master CI
 
 on:
   push:
