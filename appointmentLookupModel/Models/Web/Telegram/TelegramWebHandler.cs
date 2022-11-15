@@ -119,7 +119,7 @@ public class TelegramWebHandler: ITelegramWebHandler
                     CGEStateManager.setSessionToken(messageText.Replace("Token=",string.Empty));
                     var t = await telegramBot.SendTextMessageAsync(chatId:"@"+message.Chat.Username, text:"Token actualizado.\nCuando el icono en el titulo se vuelva verde el sistema quedará nuevamente conectado.").ConfigureAwait(false);
                 }else{
-                    var t = await telegramBot.SendTextMessageAsync(chatId:"@"+message.Chat.Username, text:"No entendí bien lo que necesitas. Por el momento podes realizar las siguientes acciones:\n1. Actualizar el token enviandome Token= seguido del codigo correspondiente.").ConfigureAwait(false);
+                    var t = await telegramBot.SendTextMessageAsync(chatId:"@"+message.Chat.Username, text:"["+Environment.GetEnvironmentVariable("ENV_REFERENCE")+"]\n"+"No entendí bien lo que necesitas. Por el momento podes realizar las siguientes acciones:\n1. Actualizar el token enviandome Token= seguido del codigo correspondiente.").ConfigureAwait(false);
                 }
             }
         }
